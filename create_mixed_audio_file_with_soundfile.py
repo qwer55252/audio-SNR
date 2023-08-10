@@ -4,7 +4,7 @@ import numpy as np
 import random
 import soundfile as sf
 from enum import Enum
-
+from matplotlib import pyplot as plt
 
 class EncodingType(Enum):
     def __new__(cls, *args, **kwds):
@@ -77,24 +77,39 @@ if __name__ == "__main__":
         if item.description == metadata.subtype_info:
             encoding_type = item
 
-    clean_amp, clean_samplerate = sf.read(clean_file, dtype=encoding_type.dtype)
-    noise_amp, noise_samplerate = sf.read(noise_file, dtype=encoding_type.dtype)
-
-    clean_rms = cal_rms(clean_amp)
+    clean_amp, clean_samplerate = sf.read(clean_file, dtype=encoding_type.dtype) # clean data 의 진폭, samplerate 취득
+    noise_amp, noise_samplerate = sf.read(noise_file, dtype=encoding_type.dtype) # noise data 의 진폭, samplerate 취득 
+    
+    print(f'clean_samplerate : {clean_samplerate}')
+    print(f'noise_samplerate : {noise_samplerate}')
+    plt.subplot(221)
+    plt.plot(clean_amp)
+    plt.subplot(222)
+    plt.plot(noise_amp)
+    
+    clean_rms = cal_rms(clean_amp) # rms : Root Mean square
 
     start = random.randint(0, len(noise_amp) - len(clean_amp))
     divided_noise_amp = noise_amp[start : start + len(clean_amp)]
     noise_rms = cal_rms(divided_noise_amp)
+    print(f'clean_rms : {clean_rms}')
+    print(f'noise_rms : {noise_rms}')
 
     snr = args.snr
     adjusted_noise_rms = cal_adjusted_rms(clean_rms, snr)
 
     adjusted_noise_amp = divided_noise_amp * (adjusted_noise_rms / noise_rms)
     mixed_amp = clean_amp + adjusted_noise_amp
+    
+    plt.subplot(223)
+    plt.plot(mixed_amp)
+    
 
     # Avoid clipping noise
     max_limit = encoding_type.maximum
     min_limit = encoding_type.minimum
+    print(f'max_limit : {max_limit}')
+    print(f'min_limit : {min_limit}')
     if mixed_amp.max(axis=0) > max_limit or mixed_amp.min(axis=0) < min_limit:
         if mixed_amp.max(axis=0) >= abs(mixed_amp.min(axis=0)):
             reduction_rate = max_limit / mixed_amp.max(axis=0)
@@ -103,6 +118,10 @@ if __name__ == "__main__":
         mixed_amp = mixed_amp * (reduction_rate)
         clean_amp = clean_amp * (reduction_rate)
 
+    plt.subplot(224)
+    plt.plot(mixed_amp)
+    plt.show()
+    
     save_waveform(
         args.output_mixed_file, mixed_amp, clean_samplerate, encoding_type.subtype
     )
