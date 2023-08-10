@@ -42,12 +42,12 @@ class EncodingType(Enum):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clean_file", type=str, required=True)
-    parser.add_argument("--noise_file", type=str, required=True)
-    parser.add_argument("--output_mixed_file", type=str, default="", required=True)
-    parser.add_argument("--output_clean_file", type=str, default="")
-    parser.add_argument("--output_noise_file", type=str, default="")
-    parser.add_argument("--snr", type=float, default="", required=True)
+    parser.add_argument("--clean_file", type=str, required=True) # 음성만 있는 파일의 절대 경로
+    parser.add_argument("--noise_file", type=str, required=True) # 잡음만 있는 파일의 절대 경로
+    parser.add_argument("--output_mixed_file", type=str, default="", required=True) # 처리 완료된 음성만 있는 파일의 절대 경로(옵션)
+    parser.add_argument("--output_clean_file", type=str, default="") # 처리 완료된 잡음만 있는 파일의 절대 경로(옵션)
+    parser.add_argument("--output_noise_file", type=str, default="") # 임의 SN비의 음성 파일의 절대 경로
+    parser.add_argument("--snr", type=float, default="", required=True) # 합성하려는 SN비의 크기
     args = parser.parse_args()
     return args
 
